@@ -16,14 +16,11 @@ import retrofit2.Response;
 
 public class MainActivity extends AppCompatActivity {
     private static final String TAG = MainActivity.class.getSimpleName();
-    private TextView facilityNameTextView;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-
-        facilityNameTextView = (TextView) findViewById(R.id.tv_facility_name);
 
         Intent intent = new Intent(this, LoginActivity.class);
         startActivity(intent);

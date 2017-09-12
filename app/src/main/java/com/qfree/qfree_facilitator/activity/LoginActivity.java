@@ -1,5 +1,6 @@
 package com.qfree.qfree_facilitator.activity;
 
+import android.content.Intent;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.View;
@@ -11,6 +12,7 @@ import com.qfree.qfree_facilitator.model.Facility;
 import com.qfree.qfree_facilitator.rest.ApiClient;
 import com.qfree.qfree_facilitator.rest.FacilityApiInterface;
 import com.qfree.qfree_facilitator.rest.RestError;
+import com.qfree.qfree_facilitator.service.FacilityService;
 
 import java.io.IOException;
 import java.lang.annotation.Annotation;
@@ -53,7 +55,9 @@ public class LoginActivity extends AppCompatActivity {
                         if (response.isSuccessful()) {
                             Facility facility = response.body();
                             if (facility != null) {
-                                loginStatusTextView.setText(facility.getName());
+                                FacilityService.getInstance().setFacilityInstance(facility);
+                                Intent intent = new Intent(LoginActivity.this, FacilityActivity.class);
+                                startActivity(intent);
                             }
                         } else if (response.errorBody() != null) {
 
