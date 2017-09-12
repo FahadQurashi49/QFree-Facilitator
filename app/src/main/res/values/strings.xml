@@ -1,3 +1,5 @@
 <resources>
     <string name="app_name">QFree-Facilitator</string>
+    <string name="facility_id">59ad9529a82e0e2778b65299</string>
+    <string name="login_button">Login</string>
 </resources>

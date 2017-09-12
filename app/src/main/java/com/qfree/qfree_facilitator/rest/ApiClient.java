@@ -1,5 +1,10 @@
 package com.qfree.qfree_facilitator.rest;
 
+import java.io.IOException;
+import java.lang.annotation.Annotation;
+
+import okhttp3.ResponseBody;
+import retrofit2.Converter;
 import retrofit2.Retrofit;
 import retrofit2.converter.gson.GsonConverterFactory;
 
@@ -8,7 +13,7 @@ import retrofit2.converter.gson.GsonConverterFactory;
  */
 
 public class ApiClient {
-    public static final String BASE_URL = "http://:4000/api/"; // set baseUrl here
+    public static final String BASE_URL = "http://192.168.1.6:4000/api/"; // set baseUrl here
     private static Retrofit retrofit = null;
 
 
@@ -20,5 +25,13 @@ public class ApiClient {
                     .build();
         }
         return retrofit;
+    }
+
+    public static RestError getErrorResponse (ResponseBody errorBody) throws IOException {
+        Converter<ResponseBody, RestError> converter
+                = retrofit.responseBodyConverter(RestError.class, new Annotation[0]);
+        return converter.convert(errorBody);
+
+
     }
 }

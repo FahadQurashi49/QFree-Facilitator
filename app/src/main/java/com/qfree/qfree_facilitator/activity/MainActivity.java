@@ -1,5 +1,6 @@
 package com.qfree.qfree_facilitator.activity;
 
+import android.content.Intent;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.widget.TextView;
@@ -24,23 +25,7 @@ public class MainActivity extends AppCompatActivity {
 
         facilityNameTextView = (TextView) findViewById(R.id.tv_facility_name);
 
-        FacilityApiInterface facilityApiService = ApiClient.getClient()
-                .create(FacilityApiInterface.class);
-
-        Call<Facility> call = facilityApiService.getFacility("59aed509ae40df11a81934db");
-        call.enqueue(new Callback<Facility>() {
-            @Override
-            public void onResponse(Call<Facility> call, Response<Facility> response) {
-                Facility facility = response.body();
-                if (facility != null) {
-                    facilityNameTextView.setText(facility.getName());
-                }
-            }
-
-            @Override
-            public void onFailure(Call<Facility> call, Throwable t) {
-                facilityNameTextView.setText(t.getMessage());
-            }
-        });
+        Intent intent = new Intent(this, LoginActivity.class);
+        startActivity(intent);
     }
 }
