@@ -17,7 +17,7 @@ public class Queue {
     private Long rear;
     @SerializedName("front")
     private Long front;
-    @SerializedName("facilityId")
+    @SerializedName("facility")
     private String facilityId;
 
     public Queue() {

@@ -30,17 +30,6 @@ public class QueueAdapter extends RecyclerView.Adapter<QueueAdapter.QueueViewHol
         this.listener = listener;
     }
 
-    public static class QueueViewHolder extends RecyclerView.ViewHolder {
-        LinearLayout queuesLayout;
-        TextView queueName;
-
-        public QueueViewHolder(View itemView) {
-            super(itemView);
-            queuesLayout = (LinearLayout) itemView.findViewById(R.id.layout_li_queues);
-            queueName = (TextView) itemView.findViewById(R.id.tv_li_queue_name);
-        }
-    }
-
     @Override
     public QueueViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
         View view = LayoutInflater.from(parent.getContext()).inflate(rowLayout, parent, false);
@@ -63,5 +52,15 @@ public class QueueAdapter extends RecyclerView.Adapter<QueueAdapter.QueueViewHol
         return queues.size();
     }
 
+    public static class QueueViewHolder extends RecyclerView.ViewHolder {
+        LinearLayout queuesLayout;
+        TextView queueName;
+
+        public QueueViewHolder(View itemView) {
+            super(itemView);
+            queuesLayout = (LinearLayout) itemView.findViewById(R.id.layout_li_queues);
+            queueName = (TextView) itemView.findViewById(R.id.tv_li_queue_name);
+        }
+    }
 
 }
