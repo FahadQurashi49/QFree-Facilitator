@@ -25,6 +25,8 @@ import retrofit2.Response;
 import retrofit2.Retrofit;
 
 public class LoginActivity extends AppCompatActivity {
+    private static final String TAG = LoginActivity.class.getSimpleName();
+
     private FacilityApiInterface facilityApiService;
 
     private EditText facilityIdEditText;
@@ -61,12 +63,7 @@ public class LoginActivity extends AppCompatActivity {
                             }
                         } else if (response.errorBody() != null) {
 
-                            try {
-                                RestError errorResponse = ApiClient.getErrorResponse(response.errorBody());
-                                loginStatusTextView.setText(errorResponse.getErrMsg());
-                            } catch (IOException e) {
-                                loginStatusTextView.setText(e.getMessage());
-                            }
+                            RestError.ShowError(TAG, response, getApplicationContext());
                         }
                     }
 

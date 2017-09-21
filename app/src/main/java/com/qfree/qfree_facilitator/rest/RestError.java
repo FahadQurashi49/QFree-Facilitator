@@ -1,6 +1,14 @@
 package com.qfree.qfree_facilitator.rest;
 
+import android.content.Context;
+import android.util.Log;
+import android.widget.Toast;
+
 import com.google.gson.annotations.SerializedName;
+
+import java.io.IOException;
+
+import retrofit2.Response;
 
 /**
  * Created by Fahad Qureshi on 9/9/2017.
@@ -21,6 +29,17 @@ public class RestError {
         this.errMsg = errMsg;
         this.errCode = errCode;
         this.statusCode = statusCode;
+    }
+
+    public static void ShowError(String TAG, Response response, Context context) {
+        try {
+            RestError errorResponse = ApiClient.getErrorResponse(response.errorBody());
+            Log.e(TAG, errorResponse.getErrMsg());
+            Toast.makeText(context, errorResponse.getErrMsg(), Toast.LENGTH_SHORT).show();
+        } catch (IOException e) {
+            Toast.makeText(context, e.getMessage(), Toast.LENGTH_SHORT).show();
+            Log.e(TAG, e.getMessage());
+        }
     }
 
     public String getErrMsg() {

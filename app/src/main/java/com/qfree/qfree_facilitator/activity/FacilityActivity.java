@@ -72,8 +72,9 @@ public class FacilityActivity extends AppCompatActivity {
                                         @Override
                                         public void onQueueSelected(int position, Queue queue) {
                                             if (queue != null) {
-                                                QueueService.getInstance().setQueueInstance(queue);
+//                                                QueueService.getInstance().setQueueInstance(queue);
                                                 Intent intent = new Intent(FacilityActivity.this, QueueActivity.class);
+                                                intent.putExtra("selected_queue", queue);
                                                 startActivity(intent);
                                             }
                                         }
@@ -81,13 +82,7 @@ public class FacilityActivity extends AppCompatActivity {
                             queuesRecyclerView.setAdapter(queueAdapter);
                         }
                     } else if (response.errorBody() != null) {
-
-                        try {
-                            RestError errorResponse = ApiClient.getErrorResponse(response.errorBody());
-                            Log.e(TAG, errorResponse.getErrMsg());
-                        } catch (IOException e) {
-                            Log.e(TAG, e.getMessage());
-                        }
+                        RestError.ShowError(TAG, response, getApplicationContext());
                     }
                 }
             }
