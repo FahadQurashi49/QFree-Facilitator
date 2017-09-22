@@ -21,4 +21,7 @@ public interface QueueApiInterface {
 
     @GET("facilities/{id}/queues/{queue_id}/run")
     Call<Queue> runQueue(@Path("id") String facilityId, @Path("queue_id") String queueId);
+
+    @GET("facilities/{id}/queues/{queue_id}/cancel")
+    Call<Queue> cancelQueue(@Path("id") String facilityId, @Path("queue_id") String queueId);
 }

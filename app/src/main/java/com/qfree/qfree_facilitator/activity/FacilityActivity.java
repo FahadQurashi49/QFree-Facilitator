@@ -30,6 +30,7 @@ import retrofit2.Response;
 
 public class FacilityActivity extends AppCompatActivity {
     private static final String TAG = FacilityActivity.class.getSimpleName();
+    private static final int SELECTED_QUEUE_STATE = 1;
 
     private Facility facility;
     private TextView facilityNameTextView;
@@ -38,6 +39,8 @@ public class FacilityActivity extends AppCompatActivity {
 
     private RecyclerView queuesRecyclerView;
     private QueueAdapter queueAdapter;
+
+    private int selectedQueuePosition = -1;
 
 
     @Override
@@ -73,9 +76,10 @@ public class FacilityActivity extends AppCompatActivity {
                                         public void onQueueSelected(int position, Queue queue) {
                                             if (queue != null) {
 //                                                QueueService.getInstance().setQueueInstance(queue);
+                                                selectedQueuePosition = position;
                                                 Intent intent = new Intent(FacilityActivity.this, QueueActivity.class);
                                                 intent.putExtra("selected_queue", queue);
-                                                startActivity(intent);
+                                                startActivityForResult(intent, SELECTED_QUEUE_STATE);
                                             }
                                         }
                                     });
@@ -93,5 +97,14 @@ public class FacilityActivity extends AppCompatActivity {
             }
         });
 
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        if (requestCode == SELECTED_QUEUE_STATE && resultCode == RESULT_OK) {
+            Queue changedQueue =  (Queue) data.getExtras().get("queue");
+            queueAdapter.setItem(selectedQueuePosition, changedQueue);
+        }
     }
 }

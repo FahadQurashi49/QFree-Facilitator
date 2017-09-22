@@ -3,4 +3,7 @@
     <string name="facility_id">59b96ce401fc4d2a0c7ea188</string>
     <string name="login_button">Login</string>
     <string name="btn_run_queue">Run queue</string>
+    <string name="btn_cancel_queue">Cancel</string>
+    <string name="btn_dequeue_customer">Dequeue</string>
+    <string name="btn_enqueue_customer">Enqueue</string>
 </resources>

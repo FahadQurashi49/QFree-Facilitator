@@ -57,4 +57,47 @@
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintVertical_bias="0.0" />
 
+    <Button
+        android:id="@+id/btn_enqueue_customer"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginLeft="8dp"
+        android:layout_marginRight="8dp"
+        android:onClick="onBtnEnqueueClick"
+        android:text="@string/btn_enqueue_customer"
+        android:visibility="invisible"
+        app:layout_constraintBaseline_toBaselineOf="@+id/btn_dequeue_customer"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintRight_toLeftOf="@+id/btn_dequeue_customer" />
+
+    <Button
+        android:id="@+id/btn_dequeue_customer"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginLeft="8dp"
+        android:layout_marginRight="8dp"
+        android:onClick="onBtnDequeueClick"
+        android:text="@string/btn_dequeue_customer"
+        android:visibility="invisible"
+        app:layout_constraintBaseline_toBaselineOf="@+id/btn_cancel_queue"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintRight_toRightOf="parent" />
+
+    <Button
+        android:id="@+id/btn_cancel_queue"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="8dp"
+        android:layout_marginLeft="8dp"
+        android:layout_marginRight="8dp"
+        android:layout_marginTop="9dp"
+        android:onClick="onBtnCancelQueueClick"
+        android:text="@string/btn_cancel_queue"
+        android:visibility="invisible"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintLeft_toRightOf="@+id/btn_dequeue_customer"
+        app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/rv_customers"
+        app:layout_constraintVertical_bias="0.39" />
+
 </android.support.constraint.ConstraintLayout>

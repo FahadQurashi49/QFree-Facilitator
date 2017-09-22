@@ -11,6 +11,7 @@ import android.widget.TextView;
 import com.qfree.qfree_facilitator.R;
 import com.qfree.qfree_facilitator.model.Customer;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -21,6 +22,12 @@ public class CustomerAdapter extends RecyclerView.Adapter<CustomerAdapter.Custom
     List<Customer> customers;
     private int rowLayout;
     private Context context;
+
+    public CustomerAdapter(int rowLayout, Context context) {
+        this.rowLayout = rowLayout;
+        this.context = context;
+        this.customers = new ArrayList<>();
+    }
 
     public CustomerAdapter(List<Customer> customers, int rowLayout, Context context) {
         this.customers = customers;
@@ -42,6 +49,22 @@ public class CustomerAdapter extends RecyclerView.Adapter<CustomerAdapter.Custom
     @Override
     public int getItemCount() {
         return customers.size();
+    }
+
+    public List<Customer> getCustomers() {
+        return customers;
+    }
+
+    public void setCustomers(List<Customer> customers) {
+        this.customers = customers;
+        notifyDataSetChanged();
+    }
+
+    public void clearList() {
+        if (this.customers.size() > 0) {
+            this.customers.clear();
+            notifyDataSetChanged();
+        }
     }
 
     public static class CustomerViewHolder extends RecyclerView.ViewHolder {

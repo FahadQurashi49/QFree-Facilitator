@@ -1,6 +1,7 @@
 package com.qfree.qfree_facilitator.adapter;
 
 import android.content.Context;
+import android.graphics.Color;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -38,7 +39,11 @@ public class QueueAdapter extends RecyclerView.Adapter<QueueAdapter.QueueViewHol
 
     @Override
     public void onBindViewHolder(QueueViewHolder holder, final int position) {
-        holder.queueName.setText(queues.get(position).getName());
+        Queue queue = queues.get(position);
+        holder.queueName.setText(queue.getName());
+        if (queue.getRunning()) {
+            holder.queuesLayout.setBackgroundColor(Color.GREEN);
+        }
         holder.itemView.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -50,6 +55,11 @@ public class QueueAdapter extends RecyclerView.Adapter<QueueAdapter.QueueViewHol
     @Override
     public int getItemCount() {
         return queues.size();
+    }
+
+    public void setItem (int position, Queue queue) {
+        this.queues.set(position, queue);
+        notifyItemChanged(position);
     }
 
     public static class QueueViewHolder extends RecyclerView.ViewHolder {

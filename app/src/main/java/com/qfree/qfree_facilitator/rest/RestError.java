@@ -41,6 +41,11 @@ public class RestError {
             Log.e(TAG, e.getMessage());
         }
     }
+    public static void ShowError(String TAG, String errMsg, Context context) {
+        Log.e(TAG, errMsg);
+        Toast.makeText(context, errMsg, Toast.LENGTH_SHORT).show();
+    }
+
 
     public String getErrMsg() {
         return errMsg;
