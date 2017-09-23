@@ -1,10 +1,12 @@
 package com.qfree.qfree_facilitator.activity;
 
+import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
-import android.support.annotation.NonNull;
+import android.os.Build;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
-import android.support.v7.view.ActionMode;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
@@ -16,14 +18,15 @@ import android.widget.Toast;
 import com.qfree.qfree_facilitator.R;
 import com.qfree.qfree_facilitator.adapter.CustomerAdapter;
 import com.qfree.qfree_facilitator.model.Customer;
+import com.qfree.qfree_facilitator.model.CustomerCallback;
 import com.qfree.qfree_facilitator.model.PageResponse;
 import com.qfree.qfree_facilitator.model.Queue;
 import com.qfree.qfree_facilitator.rest.ApiClient;
 import com.qfree.qfree_facilitator.rest.QueueApiInterface;
 import com.qfree.qfree_facilitator.rest.RestError;
-import com.qfree.qfree_facilitator.service.QueueService;
 
-import java.io.IOException;
+import org.apache.commons.lang3.builder.EqualsBuilder;
+
 import java.util.List;
 
 import retrofit2.Call;
@@ -44,6 +47,7 @@ public class QueueActivity extends AppCompatActivity {
     private Queue queue;
     private QueueApiInterface queueApiService;
     private boolean queueStateChange = false;
+    private Customer frontCustomer;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -67,31 +71,8 @@ public class QueueActivity extends AppCompatActivity {
             customersRecyclerView.setVisibility(View.VISIBLE);
 
             toggleQueueFunctionalityButtons(true);
+            syncCustomerList();
 
-            // populate list with queue customers
-            Call<PageResponse<Customer>> allQueueCustomerCall =
-                    queueApiService.getAllQueueCustomer(queue.getFacilityId(), queue.getId());
-            allQueueCustomerCall.enqueue(new Callback<PageResponse<Customer>>() {
-                @Override
-                public void onResponse(Call<PageResponse<Customer>> call, Response<PageResponse<Customer>> response) {
-
-                    if (response.isSuccessful()) {
-                        PageResponse<Customer> customerPageResponse = response.body();
-                        if (customerPageResponse != null) {
-                            List<Customer> queueCustomers = customerPageResponse.getDocs();
-                            customerAdapter.setCustomers(queueCustomers);
-                        }
-
-                    } else if (response.errorBody() != null) {
-                        RestError.ShowError(TAG, response, getApplicationContext());
-                    }
-                }
-
-                @Override
-                public void onFailure(Call<PageResponse<Customer>> call, Throwable t) {
-                    Log.e(TAG, t.toString());
-                }
-            });
         } else {
             runQueueButton.setVisibility(View.VISIBLE);
         }
@@ -105,7 +86,7 @@ public class QueueActivity extends AppCompatActivity {
             @Override
             public void onResponse(Call<Queue> call, Response<Queue> response) {
                 try {
-                    if (response.isSuccessful()) {
+                    if (RestError.ShowIfError(TAG, response, getApplicationContext())) {
                         Queue respQueue = response.body();
                         if (respQueue.getRunning()) {
                             Toast.makeText(getApplicationContext(), "Running " + respQueue.getName(), Toast.LENGTH_SHORT).show();
@@ -114,9 +95,6 @@ public class QueueActivity extends AppCompatActivity {
                             queueStateChange = true;
                             toggleQueueFunctionalityButtons(true);
                         }
-
-                    } else if (response.errorBody() != null) {
-                        RestError.ShowError(TAG, response, getApplicationContext());
                     }
                 } catch (Exception e) {
                     RestError.ShowError(TAG, e.getMessage(), getApplicationContext());
@@ -136,10 +114,10 @@ public class QueueActivity extends AppCompatActivity {
             @Override
             public void onResponse(Call<Queue> call, Response<Queue> response) {
                 try {
-                    if (response.isSuccessful()) {
+                    if (RestError.ShowIfError(TAG, response, getApplicationContext())) {
                         Queue respQueue = response.body();
-                        if (!respQueue.getRunning()) {
-                            Toast.makeText(getApplicationContext(), "Cancel " + respQueue.getName(), Toast.LENGTH_SHORT).show();
+                        if (respQueue != null && !respQueue.getRunning()) {
+//                            Toast.makeText(getApplicationContext(), "Cancel " + respQueue.getName(), Toast.LENGTH_SHORT).show();
                             runQueueButton.setVisibility(View.VISIBLE);
                             queue = respQueue;
                             queueStateChange = true;
@@ -147,9 +125,6 @@ public class QueueActivity extends AppCompatActivity {
 
                             toggleQueueFunctionalityButtons(false);
                         }
-
-                    } else if (response.errorBody() != null) {
-                        RestError.ShowError(TAG, response, getApplicationContext());
                     }
                 } catch (Exception e) {
                     RestError.ShowError(TAG, e.getMessage(), getApplicationContext());
@@ -165,7 +140,7 @@ public class QueueActivity extends AppCompatActivity {
 
     }
     public void onBtnDequeueClick(View view) {
-
+        confirmDequeueCustomer();
     }
     public void onBtnEnqueueClick(View view) {
 
@@ -193,5 +168,137 @@ public class QueueActivity extends AppCompatActivity {
         cancelButton = (Button) findViewById(R.id.btn_cancel_queue);
         cancelButton.setVisibility(visibility);
 
+    }
+
+    private void confirmDequeueCustomer() {
+        final Context context = this;
+
+        getFrontCustomer(new CustomerCallback() {
+            @Override
+            public void onCustomerReceive(final Customer customer) {
+                AlertDialog.Builder builder;
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+                    builder = new AlertDialog.Builder(context, android.R.style.Theme_Material_Dialog_Alert);
+                } else {
+                    builder = new AlertDialog.Builder(context);
+                }
+                builder.setTitle("Dequeue Customer")
+                        .setMessage("Are you sure you want to Dequeue " + customer.getName() + "?")
+                        .setPositiveButton(android.R.string.yes, new DialogInterface.OnClickListener() {
+                            public void onClick(DialogInterface dialog, int which) {
+                                dequeueCustomer(customer);
+                            }
+                        })
+                        .setNegativeButton(android.R.string.no, new DialogInterface.OnClickListener() {
+                            public void onClick(DialogInterface dialog, int which) {
+                                // do nothing
+                            }
+                        })
+                        .setIcon(android.R.drawable.ic_dialog_alert)
+                        .show();
+            }
+        });
+
+
+    }
+
+    private void  getFrontCustomer(final CustomerCallback customerCallback) {
+        Call<Customer> frontCustomerCall = queueApiService.getFrontCustomer(queue.getFacilityId(), queue.getId());
+        frontCustomerCall.enqueue(new Callback<Customer>() {
+            @Override
+            public void onResponse(Call<Customer> call, Response<Customer> response) {
+                try {
+                    if (RestError.ShowIfError(TAG, response, getApplicationContext())) {
+                        Customer respCustomer = response.body();
+                        if (respCustomer != null) {
+                            frontCustomer = respCustomer;
+                            customerCallback.onCustomerReceive(respCustomer);
+                        }
+                    }
+                } catch (Exception e) {
+                    RestError.ShowError(TAG, e.getMessage(), getApplicationContext());
+                }
+            }
+
+            @Override
+            public void onFailure(Call<Customer> call, Throwable t) {
+                RestError.ShowError(TAG, t.toString(), getApplicationContext());
+            }
+        });
+    }
+
+    private void dequeueCustomer (final Customer frontCustomer) {
+        Call<Customer> dequeueCustomerCall = queueApiService.dequeueCustomer(queue.getFacilityId(), queue.getId());
+        dequeueCustomerCall.enqueue(new Callback<Customer>() {
+            @Override
+            public void onResponse(Call<Customer> call, Response<Customer> response) {
+                try {
+                    if (RestError.ShowIfError(TAG, response, getApplicationContext())) {
+                        Customer dequeuedCustomer = response.body();
+                        if (dequeuedCustomer != null) {
+                            customerAdapter.removeCustomer(dequeuedCustomer);
+                        } else {
+                            syncCustomerList();
+                        }
+
+                        syncQueueObject();
+                    }
+                } catch (Exception e) {
+                    RestError.ShowError(TAG, e.getMessage(), getApplicationContext());
+                }
+            }
+
+            @Override
+            public void onFailure(Call<Customer> call, Throwable t) {
+                RestError.ShowError(TAG, t.toString(), getApplicationContext());
+            }
+        });
+    }
+
+    private void syncQueueObject () {
+        Call<Queue> queueCall = queueApiService.getQueue(this.queue.getFacilityId(), this.queue.getId());
+        queueCall.enqueue(new Callback<Queue>() {
+            @Override
+            public void onResponse(Call<Queue> call, Response<Queue> response) {
+                Queue respQueue = response.body();
+                if (!EqualsBuilder.reflectionEquals(queue, respQueue)) {
+                    queue = respQueue;
+                    queueStateChange = true;
+                }
+            }
+
+            @Override
+            public void onFailure(Call<Queue> call, Throwable t) {
+
+            }
+        });
+    }
+
+    private void syncCustomerList() {
+        // populate list with queue customers
+        Call<PageResponse<Customer>> allQueueCustomerCall =
+                queueApiService.getAllQueueCustomer(queue.getFacilityId(), queue.getId());
+        allQueueCustomerCall.enqueue(new Callback<PageResponse<Customer>>() {
+            @Override
+            public void onResponse(Call<PageResponse<Customer>> call, Response<PageResponse<Customer>> response) {
+                try {
+                    if (RestError.ShowIfError(TAG, response, getApplicationContext())) {
+                        PageResponse<Customer> customerPageResponse = response.body();
+                        if (customerPageResponse != null) {
+                            List<Customer> queueCustomers = customerPageResponse.getDocs();
+                            customerAdapter.setCustomers(queueCustomers);
+                        }
+                    }
+                } catch (Exception e) {
+                    RestError.ShowError(TAG, e.getMessage(), getApplicationContext());
+                }
+
+            }
+
+            @Override
+            public void onFailure(Call<PageResponse<Customer>> call, Throwable t) {
+                Log.e(TAG, t.toString());
+            }
+        });
     }
 }

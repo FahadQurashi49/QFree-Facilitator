@@ -13,6 +13,9 @@ import retrofit2.http.Path;
  */
 
 public interface QueueApiInterface {
+    @GET("facilities/{id}/queues/{queue_id}")
+    Call<Queue> getQueue(@Path("id") String facilityId, @Path("queue_id") String queueId);
+
     @GET("facilities/{id}/queues")
     Call<PageResponse<Queue>> getAllQueues(@Path("id") String facilityId);
 
@@ -24,4 +27,12 @@ public interface QueueApiInterface {
 
     @GET("facilities/{id}/queues/{queue_id}/cancel")
     Call<Queue> cancelQueue(@Path("id") String facilityId, @Path("queue_id") String queueId);
+
+    @GET("facilities/{id}/queues/{queue_id}/dequeue")
+    Call<Customer> dequeueCustomer(@Path("id") String facilityId, @Path("queue_id") String queueId);
+
+    @GET("facilities/{id}/queues/{queue_id}/front")
+    Call<Customer> getFrontCustomer(@Path("id") String facilityId, @Path("queue_id") String queueId);
+
+
 }

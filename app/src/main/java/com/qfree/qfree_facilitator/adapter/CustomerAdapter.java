@@ -12,7 +12,9 @@ import com.qfree.qfree_facilitator.R;
 import com.qfree.qfree_facilitator.model.Customer;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Created by Fahad Qureshi on 9/16/2017.
@@ -20,6 +22,7 @@ import java.util.List;
 
 public class CustomerAdapter extends RecyclerView.Adapter<CustomerAdapter.CustomerViewHolder> {
     List<Customer> customers;
+    Map<String, Customer> customerMap;
     private int rowLayout;
     private Context context;
 
@@ -30,7 +33,7 @@ public class CustomerAdapter extends RecyclerView.Adapter<CustomerAdapter.Custom
     }
 
     public CustomerAdapter(List<Customer> customers, int rowLayout, Context context) {
-        this.customers = customers;
+        this.setCustomers(customers);
         this.rowLayout = rowLayout;
         this.context = context;
     }
@@ -51,12 +54,20 @@ public class CustomerAdapter extends RecyclerView.Adapter<CustomerAdapter.Custom
         return customers.size();
     }
 
+    private void createCustomerMap(List<Customer> customers) {
+        this.customerMap = new HashMap<>();
+        for (Customer customer: customers) {
+            this.customerMap.put(customer.getId(), customer);
+        }
+    }
+
     public List<Customer> getCustomers() {
         return customers;
     }
 
     public void setCustomers(List<Customer> customers) {
         this.customers = customers;
+        createCustomerMap(customers);
         notifyDataSetChanged();
     }
 
@@ -64,6 +75,18 @@ public class CustomerAdapter extends RecyclerView.Adapter<CustomerAdapter.Custom
         if (this.customers.size() > 0) {
             this.customers.clear();
             notifyDataSetChanged();
+        }
+    }
+    public void removeCustomer(Customer customer) {
+        if (this.customers != null && this.customerMap != null && this.customers.size() > 0) {
+            Customer customerInList = this.customerMap.get(customer.getId());
+            if (customerInList != null) {
+                int index = this.customers.indexOf(customerInList);
+                if (this.customers.remove(customerInList)) {
+                    notifyItemRemoved(index);
+                }
+            }
+
         }
     }
 

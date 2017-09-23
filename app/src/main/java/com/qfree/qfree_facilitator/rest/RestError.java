@@ -31,15 +31,19 @@ public class RestError {
         this.statusCode = statusCode;
     }
 
-    public static void ShowError(String TAG, Response response, Context context) {
+    public static boolean ShowIfError(String TAG, Response response, Context context) {
         try {
-            RestError errorResponse = ApiClient.getErrorResponse(response.errorBody());
-            Log.e(TAG, errorResponse.getErrMsg());
-            Toast.makeText(context, errorResponse.getErrMsg(), Toast.LENGTH_SHORT).show();
-        } catch (IOException e) {
-            Toast.makeText(context, e.getMessage(), Toast.LENGTH_SHORT).show();
-            Log.e(TAG, e.getMessage());
+            if (response != null && !response.isSuccessful() && response.errorBody() != null) {
+                RestError errorResponse = ApiClient.getErrorResponse(response.errorBody());
+                Log.e(TAG, errorResponse.getErrMsg());
+                Toast.makeText(context, errorResponse.getErrMsg(), Toast.LENGTH_SHORT).show();
+                return false;
+            }
+        } catch (Exception e) {
+            ShowError(TAG, e.getMessage(), context);
+            return false;
         }
+        return true;
     }
     public static void ShowError(String TAG, String errMsg, Context context) {
         Log.e(TAG, errMsg);

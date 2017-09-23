@@ -53,20 +53,14 @@ public class LoginActivity extends AppCompatActivity {
             call.enqueue(new Callback<Facility>() {
                 @Override
                 public void onResponse(Call<Facility> call, Response<Facility> response) {
-                    if (response != null) {
-                        if (response.isSuccessful()) {
-                            Facility facility = response.body();
-                            if (facility != null) {
-                                FacilityService.getInstance().setFacilityInstance(facility);
-                                Intent intent = new Intent(LoginActivity.this, FacilityActivity.class);
-                                startActivity(intent);
-                            }
-                        } else if (response.errorBody() != null) {
-
-                            RestError.ShowError(TAG, response, getApplicationContext());
+                    if (RestError.ShowIfError(TAG, response, getApplicationContext())) {
+                        Facility facility = response.body();
+                        if (facility != null) {
+                            FacilityService.getInstance().setFacilityInstance(facility);
+                            Intent intent = new Intent(LoginActivity.this, FacilityActivity.class);
+                            startActivity(intent);
                         }
                     }
-
                 }
 
                 @Override

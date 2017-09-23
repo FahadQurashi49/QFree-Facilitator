@@ -63,39 +63,35 @@ public class FacilityActivity extends AppCompatActivity {
         facilityQueuesCall.enqueue(new Callback<PageResponse<Queue>>() {
             @Override
             public void onResponse(Call<PageResponse<Queue>> call, Response<PageResponse<Queue>> response) {
-                if (response != null) {
-                    if (response.isSuccessful()) {
-                        PageResponse<Queue> queuesPageResp = response.body();
-                        if (queuesPageResp != null) {
-                            List<Queue> queues = queuesPageResp.getDocs();
-                            queueAdapter = new QueueAdapter(queues,
-                                    R.layout.list_item_queue,
-                                    getApplicationContext(),
-                                    new QueueAdapterListener() {
-                                        @Override
-                                        public void onQueueSelected(int position, Queue queue) {
-                                            if (queue != null) {
+                if (RestError.ShowIfError(TAG, response, getApplicationContext())) {
+                    PageResponse<Queue> queuesPageResp = response.body();
+                    if (queuesPageResp != null) {
+                        List<Queue> queues = queuesPageResp.getDocs();
+                        queueAdapter = new QueueAdapter(queues,
+                                R.layout.list_item_queue,
+                                getApplicationContext(),
+                                new QueueAdapterListener() {
+                                    @Override
+                                    public void onQueueSelected(int position, Queue queue) {
+                                        if (queue != null) {
 //                                                QueueService.getInstance().setQueueInstance(queue);
-                                                selectedQueuePosition = position;
-                                                Intent intent = new Intent(FacilityActivity.this, QueueActivity.class);
-                                                intent.putExtra("selected_queue", queue);
-                                                startActivityForResult(intent, SELECTED_QUEUE_STATE);
-                                            }
+                                            selectedQueuePosition = position;
+                                            Intent intent = new Intent(FacilityActivity.this, QueueActivity.class);
+                                            intent.putExtra("selected_queue", queue);
+                                            startActivityForResult(intent, SELECTED_QUEUE_STATE);
                                         }
-                                    });
-                            queuesRecyclerView.setAdapter(queueAdapter);
-                        }
-                    } else if (response.errorBody() != null) {
-                        RestError.ShowError(TAG, response, getApplicationContext());
+                                    }
+                                });
+                        queuesRecyclerView.setAdapter(queueAdapter);
                     }
                 }
             }
 
-            @Override
-            public void onFailure(Call<PageResponse<Queue>> call, Throwable t) {
-                Log.e(TAG, t.toString());
-            }
-        });
+                @Override
+                public void onFailure (Call < PageResponse < Queue >> call, Throwable t){
+                    RestError.ShowError(TAG, t.toString(), getApplicationContext());
+                }
+            });
 
     }
 
