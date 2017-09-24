@@ -6,4 +6,7 @@
     <string name="btn_cancel_queue">Cancel</string>
     <string name="btn_dequeue_customer">Dequeue</string>
     <string name="btn_enqueue_customer">Enqueue</string>
+    <string name="lbl_front">Front</string>
+    <string name="lbl_rear">Rear</string>
+    <string name="lbl_next_customer">Next</string>
 </resources>

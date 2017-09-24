@@ -18,14 +18,14 @@ public class RestError {
     @SerializedName("error")
     private String errMsg;
     @SerializedName("errorCode")
-    private int errCode;
+    private String errCode;
     @SerializedName("statusCode")
     private int statusCode;
 
     public RestError() {
     }
 
-    public RestError(String errMsg, int errCode, int statusCode) {
+    public RestError(String errMsg, String errCode, int statusCode) {
         this.errMsg = errMsg;
         this.errCode = errCode;
         this.statusCode = statusCode;
@@ -33,7 +33,7 @@ public class RestError {
 
     public static boolean ShowIfError(String TAG, Response response, Context context) {
         try {
-            if (response != null && !response.isSuccessful() && response.errorBody() != null) {
+            if (IsResponseError(response)) {
                 RestError errorResponse = ApiClient.getErrorResponse(response.errorBody());
                 Log.e(TAG, errorResponse.getErrMsg());
                 Toast.makeText(context, errorResponse.getErrMsg(), Toast.LENGTH_SHORT).show();
@@ -44,6 +44,9 @@ public class RestError {
             return false;
         }
         return true;
+    }
+    public static boolean IsResponseError (Response response) {
+        return response != null && !response.isSuccessful() && response.errorBody() != null;
     }
     public static void ShowError(String TAG, String errMsg, Context context) {
         Log.e(TAG, errMsg);
@@ -59,11 +62,11 @@ public class RestError {
         this.errMsg = errMsg;
     }
 
-    public int getErrCode() {
+    public String getErrCode() {
         return errCode;
     }
 
-    public void setErrCode(int errCode) {
+    public void setErrCode(String errCode) {
         this.errCode = errCode;
     }
 

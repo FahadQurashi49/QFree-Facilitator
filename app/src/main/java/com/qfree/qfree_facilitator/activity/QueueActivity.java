@@ -27,7 +27,9 @@ import com.qfree.qfree_facilitator.rest.RestError;
 
 import org.apache.commons.lang3.builder.EqualsBuilder;
 
+import java.io.IOException;
 import java.util.List;
+import java.util.Locale;
 
 import retrofit2.Call;
 import retrofit2.Callback;
@@ -42,9 +44,15 @@ public class QueueActivity extends AppCompatActivity {
     private Button enqueueButton;
     private Button dequeueButton;
     private Button cancelButton;
+    private TextView frontTextView;
+    private TextView rearTextView;
+    private TextView frontLabel;
+    private TextView rearLabel;
+    private TextView nextCustomerLabel;
+    private TextView nextCustomerTextView;
 
     private CustomerAdapter customerAdapter;
-    private Queue queue;
+    private Queue currQueue;
     private QueueApiInterface queueApiService;
     private boolean queueStateChange = false;
     private Customer frontCustomer;
@@ -57,31 +65,42 @@ public class QueueActivity extends AppCompatActivity {
         queueApiService = ApiClient.getClient().create(QueueApiInterface.class);
 
 //        queue = QueueService.getInstance().getQueueInstance();
-        queue = (Queue) getIntent().getSerializableExtra("selected_queue");
+        currQueue = (Queue) getIntent().getSerializableExtra("selected_queue");
         queueNameTextView = (TextView) findViewById(R.id.tv_queue_name);
         customersRecyclerView = (RecyclerView) findViewById(R.id.rv_customers);
         runQueueButton = (Button) findViewById(R.id.btn_run_queue);
+        enqueueButton = (Button) findViewById(R.id.btn_enqueue_customer);
+        dequeueButton = (Button) findViewById(R.id.btn_dequeue_customer);
+        cancelButton = (Button) findViewById(R.id.btn_cancel_queue);
+        frontTextView = (TextView) findViewById(R.id.tv_front);
+        rearTextView = (TextView) findViewById(R.id.tv_rear);
+        frontLabel = (TextView) findViewById(R.id.lbl_front);
+        rearLabel = (TextView) findViewById(R.id.lbl_rear);
+        nextCustomerLabel = (TextView) findViewById(R.id.lbl_next_customer);
+        nextCustomerTextView = (TextView) findViewById(R.id.tv_next_customer);
 
-        queueNameTextView.setText(queue.getName());
+        queueNameTextView.setText(currQueue.getName());
         customersRecyclerView.setLayoutManager(new LinearLayoutManager(this));
         customerAdapter = new CustomerAdapter(R.layout.list_item_customer, getApplicationContext());
         customersRecyclerView.setAdapter(customerAdapter);
 
-        if (queue.getRunning()) {
+        if (currQueue.getRunning()) {
             customersRecyclerView.setVisibility(View.VISIBLE);
 
-            toggleQueueFunctionalityButtons(true);
+            toggleQueueFunctionalityViews(true);
             syncCustomerList();
+            syncQueueUI();
 
         } else {
             runQueueButton.setVisibility(View.VISIBLE);
+            toggleQueueFunctionalityViews(false);
         }
 
 
     }
 
     public void onBtnRunQueueClick(View view) {
-        Call<Queue> runQueueCall = queueApiService.runQueue(queue.getFacilityId(), queue.getId());
+        Call<Queue> runQueueCall = queueApiService.runQueue(currQueue.getFacilityId(), currQueue.getId());
         runQueueCall.enqueue(new Callback<Queue>() {
             @Override
             public void onResponse(Call<Queue> call, Response<Queue> response) {
@@ -91,9 +110,10 @@ public class QueueActivity extends AppCompatActivity {
                         if (respQueue.getRunning()) {
                             Toast.makeText(getApplicationContext(), "Running " + respQueue.getName(), Toast.LENGTH_SHORT).show();
                             runQueueButton.setVisibility(View.INVISIBLE);
-                            queue = respQueue;
+                            currQueue = respQueue;
                             queueStateChange = true;
-                            toggleQueueFunctionalityButtons(true);
+                            toggleQueueFunctionalityViews(true);
+                            syncQueueUI();
                         }
                     }
                 } catch (Exception e) {
@@ -109,7 +129,7 @@ public class QueueActivity extends AppCompatActivity {
     }
 
     public void onBtnCancelQueueClick(View view) {
-        Call<Queue> cancelQueueCall = queueApiService.cancelQueue(queue.getFacilityId(), queue.getId());
+        Call<Queue> cancelQueueCall = queueApiService.cancelQueue(currQueue.getFacilityId(), currQueue.getId());
         cancelQueueCall.enqueue(new Callback<Queue>() {
             @Override
             public void onResponse(Call<Queue> call, Response<Queue> response) {
@@ -119,11 +139,11 @@ public class QueueActivity extends AppCompatActivity {
                         if (respQueue != null && !respQueue.getRunning()) {
 //                            Toast.makeText(getApplicationContext(), "Cancel " + respQueue.getName(), Toast.LENGTH_SHORT).show();
                             runQueueButton.setVisibility(View.VISIBLE);
-                            queue = respQueue;
+                            currQueue = respQueue;
                             queueStateChange = true;
                             customerAdapter.clearList();
 
-                            toggleQueueFunctionalityButtons(false);
+                            toggleQueueFunctionalityViews(false);
                         }
                     }
                 } catch (Exception e) {
@@ -149,7 +169,7 @@ public class QueueActivity extends AppCompatActivity {
     @Override
     public void finish() {
         Intent returnIntent = new Intent();
-        returnIntent.putExtra("queue", queue);
+        returnIntent.putExtra("queue", currQueue);
         if (queueStateChange) {
             setResult(RESULT_OK, returnIntent);
         } else {
@@ -158,22 +178,75 @@ public class QueueActivity extends AppCompatActivity {
         super.finish();
     }
 
-    private void toggleQueueFunctionalityButtons (boolean show) {
+    private void toggleQueueFunctionalityViews(boolean show) {
         int visibility = show? View.VISIBLE: View.INVISIBLE;
         // show/ hide enqueue, dequeue, cancel buttons
-        enqueueButton = (Button) findViewById(R.id.btn_enqueue_customer);
         enqueueButton.setVisibility(visibility);
-        dequeueButton = (Button) findViewById(R.id.btn_dequeue_customer);
         dequeueButton.setVisibility(visibility);
-        cancelButton = (Button) findViewById(R.id.btn_cancel_queue);
         cancelButton.setVisibility(visibility);
+        frontLabel.setVisibility(visibility);
+        rearLabel.setVisibility(visibility);
+        frontTextView.setVisibility(visibility);
+        rearTextView.setVisibility(visibility);
+        nextCustomerLabel.setVisibility(visibility);
+        nextCustomerTextView.setVisibility(visibility);
+        if(!show) {
+            frontTextView.setText("");
+            rearTextView.setText("");
+            nextCustomerTextView.setText("");
+        }
+    }
 
+    private void syncQueueUI() {
+        frontTextView.setText(String.format(Locale.ENGLISH, "%d", currQueue.getFront()));
+        rearTextView.setText(String.format(Locale.ENGLISH, "%d", currQueue.getRear()));
+        getFrontCustomer(new CustomerCallback() {
+            @Override
+            public void onError(Response response) {
+                if (response != null && response.errorBody() != null)
+                    try {
+                        RestError errorResponse = ApiClient.getErrorResponse(response.errorBody());
+                        if(errorResponse.getErrCode().equals("255")){
+                            nextCustomerLabel.setText(errorResponse.getErrMsg());
+                            nextCustomerTextView.setVisibility(View.INVISIBLE);
+                            return;
+                        }
+                    } catch (Exception e) {
+                        Log.e(TAG, e.getMessage());
+                    }
+                nextCustomerTextView.setText("");
+                nextCustomerTextView.setVisibility(View.INVISIBLE);
+                nextCustomerLabel.setVisibility(View.INVISIBLE);
+            }
+
+            @Override
+            public void onError(String errStr) {
+                nextCustomerTextView.setText("");
+                nextCustomerTextView.setVisibility(View.INVISIBLE);
+                nextCustomerLabel.setVisibility(View.INVISIBLE);
+            }
+
+            @Override
+            public void onCustomerReceive(Customer customer) {
+                nextCustomerTextView.setText(customer.getName());
+            }
+        });
     }
 
     private void confirmDequeueCustomer() {
         final Context context = this;
 
         getFrontCustomer(new CustomerCallback() {
+            @Override
+            public void onError(Response response) {
+                RestError.ShowIfError(TAG, response, getApplicationContext());
+            }
+
+            @Override
+            public void onError(String errStr) {
+                RestError.ShowError(TAG, errStr, getApplicationContext());
+            }
+
             @Override
             public void onCustomerReceive(final Customer customer) {
                 AlertDialog.Builder builder;
@@ -203,32 +276,34 @@ public class QueueActivity extends AppCompatActivity {
     }
 
     private void  getFrontCustomer(final CustomerCallback customerCallback) {
-        Call<Customer> frontCustomerCall = queueApiService.getFrontCustomer(queue.getFacilityId(), queue.getId());
+        Call<Customer> frontCustomerCall = queueApiService.getFrontCustomer(currQueue.getFacilityId(), currQueue.getId());
         frontCustomerCall.enqueue(new Callback<Customer>() {
             @Override
             public void onResponse(Call<Customer> call, Response<Customer> response) {
                 try {
-                    if (RestError.ShowIfError(TAG, response, getApplicationContext())) {
+                    if (!RestError.IsResponseError(response)) {
                         Customer respCustomer = response.body();
                         if (respCustomer != null) {
                             frontCustomer = respCustomer;
                             customerCallback.onCustomerReceive(respCustomer);
                         }
+                    } else {
+                        customerCallback.onError(response);
                     }
                 } catch (Exception e) {
-                    RestError.ShowError(TAG, e.getMessage(), getApplicationContext());
+                    customerCallback.onError(e.getMessage());
                 }
             }
 
             @Override
             public void onFailure(Call<Customer> call, Throwable t) {
-                RestError.ShowError(TAG, t.toString(), getApplicationContext());
+                customerCallback.onError(t.toString());
             }
         });
     }
 
     private void dequeueCustomer (final Customer frontCustomer) {
-        Call<Customer> dequeueCustomerCall = queueApiService.dequeueCustomer(queue.getFacilityId(), queue.getId());
+        Call<Customer> dequeueCustomerCall = queueApiService.dequeueCustomer(currQueue.getFacilityId(), currQueue.getId());
         dequeueCustomerCall.enqueue(new Callback<Customer>() {
             @Override
             public void onResponse(Call<Customer> call, Response<Customer> response) {
@@ -241,7 +316,8 @@ public class QueueActivity extends AppCompatActivity {
                             syncCustomerList();
                         }
 
-                        syncQueueObject();
+                        syncQueueObject(); // its an async function do not call anything after this
+
                     }
                 } catch (Exception e) {
                     RestError.ShowError(TAG, e.getMessage(), getApplicationContext());
@@ -256,14 +332,15 @@ public class QueueActivity extends AppCompatActivity {
     }
 
     private void syncQueueObject () {
-        Call<Queue> queueCall = queueApiService.getQueue(this.queue.getFacilityId(), this.queue.getId());
+        Call<Queue> queueCall = queueApiService.getQueue(this.currQueue.getFacilityId(), this.currQueue.getId());
         queueCall.enqueue(new Callback<Queue>() {
             @Override
             public void onResponse(Call<Queue> call, Response<Queue> response) {
                 Queue respQueue = response.body();
-                if (!EqualsBuilder.reflectionEquals(queue, respQueue)) {
-                    queue = respQueue;
+                if (!EqualsBuilder.reflectionEquals(currQueue, respQueue)) {
+                    currQueue = respQueue;
                     queueStateChange = true;
+                    syncQueueUI();
                 }
             }
 
@@ -277,7 +354,7 @@ public class QueueActivity extends AppCompatActivity {
     private void syncCustomerList() {
         // populate list with queue customers
         Call<PageResponse<Customer>> allQueueCustomerCall =
-                queueApiService.getAllQueueCustomer(queue.getFacilityId(), queue.getId());
+                queueApiService.getAllQueueCustomer(currQueue.getFacilityId(), currQueue.getId());
         allQueueCustomerCall.enqueue(new Callback<PageResponse<Customer>>() {
             @Override
             public void onResponse(Call<PageResponse<Customer>> call, Response<PageResponse<Customer>> response) {
