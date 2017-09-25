@@ -61,6 +61,10 @@ public class QueueAdapter extends RecyclerView.Adapter<QueueAdapter.QueueViewHol
         this.queues.set(position, queue);
         notifyItemChanged(position);
     }
+    public void addItem (Queue queue) {
+        this.queues.add(queue);
+        notifyDataSetChanged();
+    }
 
     public static class QueueViewHolder extends RecyclerView.ViewHolder {
         LinearLayout queuesLayout;

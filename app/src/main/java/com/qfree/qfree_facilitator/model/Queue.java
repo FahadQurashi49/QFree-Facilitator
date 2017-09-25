@@ -34,6 +34,10 @@ public class Queue implements Serializable {
         this.facilityId = facilityId;
     }
 
+    public Queue(String name) {
+        this.name = name;
+    }
+
     public String getId() {
         return id;
     }

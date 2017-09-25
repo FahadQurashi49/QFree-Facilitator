@@ -9,4 +9,7 @@
     <string name="lbl_front">Front</string>
     <string name="lbl_rear">Rear</string>
     <string name="lbl_next_customer">Next</string>
+    <string name="btn_new_queue">Add Queue</string>
+    <string name="et_queue_name">Queue Name</string>
+    <string name="btn_add_queue">Add</string>
 </resources>

@@ -5,7 +5,9 @@ import com.qfree.qfree_facilitator.model.PageResponse;
 import com.qfree.qfree_facilitator.model.Queue;
 
 import retrofit2.Call;
+import retrofit2.http.Body;
 import retrofit2.http.GET;
+import retrofit2.http.POST;
 import retrofit2.http.Path;
 
 /**
@@ -33,6 +35,9 @@ public interface QueueApiInterface {
 
     @GET("facilities/{id}/queues/{queue_id}/front")
     Call<Customer> getFrontCustomer(@Path("id") String facilityId, @Path("queue_id") String queueId);
+
+    @POST("facilities/{id}/queues")
+    Call<Queue> addQueue(@Path("id") String facilityId, @Body Queue queue);
 
 
 }

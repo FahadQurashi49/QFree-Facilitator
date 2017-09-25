@@ -6,6 +6,7 @@ import android.os.Bundle;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
+import android.view.View;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -31,6 +32,7 @@ import retrofit2.Response;
 public class FacilityActivity extends AppCompatActivity {
     private static final String TAG = FacilityActivity.class.getSimpleName();
     private static final int SELECTED_QUEUE_STATE = 1;
+    private static final int ADDED_QUEUE = 2;
 
     private Facility facility;
     private TextView facilityNameTextView;
@@ -98,9 +100,22 @@ public class FacilityActivity extends AppCompatActivity {
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
-        if (requestCode == SELECTED_QUEUE_STATE && resultCode == RESULT_OK) {
-            Queue changedQueue =  (Queue) data.getExtras().get("queue");
-            queueAdapter.setItem(selectedQueuePosition, changedQueue);
+        if (resultCode == RESULT_OK) {
+            if (requestCode == SELECTED_QUEUE_STATE ) {
+                Queue changedQueue =  (Queue) data.getExtras().get("queue");
+                queueAdapter.setItem(selectedQueuePosition, changedQueue);
+            } else if (requestCode == ADDED_QUEUE){
+                Queue addedQueue =  (Queue) data.getExtras().get("addedQueue");
+                queueAdapter.addItem(addedQueue);
+            }
         }
+
+
+    }
+
+    public void onBtnNewQueueClick(View view) {
+        Intent intent = new Intent(FacilityActivity.this, AddQueueActivity.class);
+        startActivityForResult(intent, ADDED_QUEUE);
+
     }
 }
