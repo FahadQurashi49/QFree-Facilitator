@@ -1,4 +1,6 @@
-package com.qfree.qfree_facilitator.model;
+package com.qfree.qfree_facilitator.callbacks;
+
+import com.qfree.qfree_facilitator.model.Customer;
 
 /**
  * Created by Fahad Qureshi on 9/23/2017.

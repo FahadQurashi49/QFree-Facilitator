@@ -30,6 +30,7 @@ public class CustomerAdapter extends RecyclerView.Adapter<CustomerAdapter.Custom
         this.rowLayout = rowLayout;
         this.context = context;
         this.customers = new ArrayList<>();
+        this.customerMap = new HashMap<>();
     }
 
     public CustomerAdapter(List<Customer> customers, int rowLayout, Context context) {
@@ -78,7 +79,9 @@ public class CustomerAdapter extends RecyclerView.Adapter<CustomerAdapter.Custom
         }
     }
     public void removeCustomer(Customer customer) {
-        if (this.customers != null && this.customerMap != null && this.customers.size() > 0) {
+        if (this.customers != null &&
+                this.customers.size() > 0 &&
+                this.customerMap != null) {
             Customer customerInList = this.customerMap.get(customer.getId());
             if (customerInList != null) {
                 int index = this.customers.indexOf(customerInList);
@@ -86,6 +89,18 @@ public class CustomerAdapter extends RecyclerView.Adapter<CustomerAdapter.Custom
                     notifyItemRemoved(index);
                 }
             }
+
+        }
+    }
+
+    public void addCustomer(Customer customer) {
+        if (customer != null && this.customers != null &&
+                this.customerMap != null) {
+            // add customer at the last of the list
+            int index = this.customers.size();
+            this.customers.add(index, customer);
+            this.customerMap.put(customer.getId(), customer);
+            notifyItemInserted(index);
 
         }
     }

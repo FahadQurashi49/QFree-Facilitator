@@ -18,7 +18,7 @@ import android.widget.Toast;
 import com.qfree.qfree_facilitator.R;
 import com.qfree.qfree_facilitator.adapter.CustomerAdapter;
 import com.qfree.qfree_facilitator.model.Customer;
-import com.qfree.qfree_facilitator.model.CustomerCallback;
+import com.qfree.qfree_facilitator.callbacks.CustomerCallback;
 import com.qfree.qfree_facilitator.model.PageResponse;
 import com.qfree.qfree_facilitator.model.Queue;
 import com.qfree.qfree_facilitator.rest.ApiClient;
@@ -27,7 +27,6 @@ import com.qfree.qfree_facilitator.rest.RestError;
 
 import org.apache.commons.lang3.builder.EqualsBuilder;
 
-import java.io.IOException;
 import java.util.List;
 import java.util.Locale;
 
@@ -162,8 +161,9 @@ public class QueueActivity extends AppCompatActivity {
     public void onBtnDequeueClick(View view) {
         confirmDequeueCustomer();
     }
-    public void onBtnEnqueueClick(View view) {
 
+    public void onBtnEnqueueClick(View view) {
+        enqueueDummyCustomer();
     }
 
     @Override
@@ -228,7 +228,13 @@ public class QueueActivity extends AppCompatActivity {
 
             @Override
             public void onCustomerReceive(Customer customer) {
+                if (nextCustomerTextView.getVisibility() == View.INVISIBLE) {
+                    nextCustomerLabel.setText(R.string.lbl_next_customer);
+                    nextCustomerTextView.setVisibility(View.VISIBLE);
+                    nextCustomerLabel.setVisibility(View.VISIBLE);
+                }
                 nextCustomerTextView.setText(customer.getName());
+
             }
         });
     }
@@ -302,6 +308,38 @@ public class QueueActivity extends AppCompatActivity {
         });
     }
 
+    private void enqueueDummyCustomer () {
+        Call<Customer> enqueueDummyCustomerCall = queueApiService
+                .enqueueDummyCustomer(currQueue.getFacilityId(),
+                        currQueue.getId());
+        enqueueDummyCustomerCall.enqueue(new Callback<Customer>() {
+            @Override
+            public void onResponse(Call<Customer> call, Response<Customer> response) {
+                try {
+                    if (RestError.ShowIfError(TAG, response, getApplicationContext())) {
+                        Customer enqueuedCustomer = response.body();
+
+                        if (enqueuedCustomer != null) {
+                            if(customersRecyclerView.getVisibility() == View.INVISIBLE) {
+                                customersRecyclerView.setVisibility(View.VISIBLE);
+                            }
+                            customerAdapter.addCustomer(enqueuedCustomer);
+                        }
+
+                        syncQueueObject();
+                    }
+                } catch (Exception e) {
+                    RestError.ShowError(TAG, e.getMessage(), getApplicationContext());
+                }
+            }
+
+            @Override
+            public void onFailure(Call<Customer> call, Throwable t) {
+                RestError.ShowError(TAG, t.toString(), getApplicationContext());
+            }
+        });
+    }
+
     private void dequeueCustomer (final Customer frontCustomer) {
         Call<Customer> dequeueCustomerCall = queueApiService.dequeueCustomer(currQueue.getFacilityId(), currQueue.getId());
         dequeueCustomerCall.enqueue(new Callback<Customer>() {
@@ -312,11 +350,9 @@ public class QueueActivity extends AppCompatActivity {
                         Customer dequeuedCustomer = response.body();
                         if (dequeuedCustomer != null) {
                             customerAdapter.removeCustomer(dequeuedCustomer);
-                        } else {
-                            syncCustomerList();
                         }
 
-                        syncQueueObject(); // its an async function do not call anything after this
+                        syncQueueObject();
 
                     }
                 } catch (Exception e) {
@@ -346,7 +382,7 @@ public class QueueActivity extends AppCompatActivity {
 
             @Override
             public void onFailure(Call<Queue> call, Throwable t) {
-
+                RestError.ShowError(TAG, t.toString(), getApplicationContext());
             }
         });
     }

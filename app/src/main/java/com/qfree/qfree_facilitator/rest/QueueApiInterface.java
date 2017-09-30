@@ -39,5 +39,14 @@ public interface QueueApiInterface {
     @POST("facilities/{id}/queues")
     Call<Queue> addQueue(@Path("id") String facilityId, @Body Queue queue);
 
+    @POST("facilities/{id}/queues/{queue_id}/enqueue")
+    Call<Customer> enqueueDummyCustomer(@Path("id") String facilityId,
+                                        @Path("queue_id") String queueId,
+                                        @Body Customer customer);
+
+    @POST("facilities/{id}/queues/{queue_id}/enqueue")
+    Call<Customer> enqueueDummyCustomer(@Path("id") String facilityId,
+                                        @Path("queue_id") String queueId);
+
 
 }

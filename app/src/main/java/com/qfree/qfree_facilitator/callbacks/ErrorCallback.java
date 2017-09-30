@@ -1,4 +1,4 @@
-package com.qfree.qfree_facilitator.model;
+package com.qfree.qfree_facilitator.callbacks;
 
 import retrofit2.Response;
 
