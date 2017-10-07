@@ -17,16 +17,19 @@ public class Customer {
     private Boolean isInQueue;
     @SerializedName("queue")
     private String queueId;
+    @SerializedName("isDummy")
+    private Boolean isDummy;
 
     public Customer() {
     }
 
-    public Customer(String id, String name, Long queueNumber, Boolean isInQueue, String queueId) {
+    public Customer(String id, String name, Long queueNumber, Boolean isInQueue, String queueId, Boolean isDummy) {
         this.id = id;
         this.name = name;
         this.queueNumber = queueNumber;
         this.isInQueue = isInQueue;
         this.queueId = queueId;
+        this.isDummy = isDummy;
     }
 
     public String getId() {
@@ -67,5 +70,13 @@ public class Customer {
 
     public void setQueueId(String queueId) {
         this.queueId = queueId;
+    }
+
+    public Boolean getDummy() {
+        return isDummy;
+    }
+
+    public void setDummy(Boolean dummy) {
+        isDummy = dummy;
     }
 }
